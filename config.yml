@@ -1,0 +1,100 @@
+http:
+ #region routers 
+  routers:
+    proxmox:
+      entryPoints:
+        - "https"
+      rule: "Host(`proxmox.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: proxmox
+    truenas:
+      entryPoints:
+        - "https"
+      rule: "Host(`truenas.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: truenas
+    pterodactyl:
+      entryPoints:
+        - "https"
+      rule: "Host(`pterodactyl.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: pterodactyl
+    nextcloud:
+      entryPoints:
+        - "https"
+      rule: "Host('nextcloud.venenga.net')"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: nextcloud
+
+
+#endregion
+#region services
+  services:
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "https://10.0.0.5:8006"
+        passHostHeader: true
+    truenas:
+      loadBalancer:
+        servers:
+          - url: "https://10.0.0.3"
+        passHostHeader: true
+    pterodactyl:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.7"
+        passHostHeader: true
+    nextcloud:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:10020"
+        passHostHeader: true
+#endregion
+  middlewares:
+    https-redirectscheme:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    idrac:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+
+    secured:
+      chain:
+        middlewares:
+        - default-headers

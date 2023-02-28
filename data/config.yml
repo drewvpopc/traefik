@@ -1,0 +1,148 @@
+http:
+ #region routers 
+  routers:
+    proxmox:
+      entryPoints:
+        - "https"
+      rule: "Host(`proxmox.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: proxmox
+    nas:
+      entryPoints:
+        - "https"
+      rule: "Host(`nas.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: nas
+    servers:
+      entryPoints:
+        - "https"
+      rule: "Host(`servers.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: servers
+    gameserver-node-01:
+      entryPoints:
+        - "https"
+      rule: "Host(`gameserver-node-01.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: gameserver-node-01
+    nextcloud:
+      entryPoints:
+        - "https"
+      rule: "Host(`nextcloud.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: nextcloud
+    photos:
+      entryPoints:
+        - "https"
+      rule: "Host(`photos.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: photos
+    vault:
+      entryPoints:
+        - "https"
+      rule: "Host(`vault.venenga.net`)"
+      middlewares:
+        - default-headers
+        - https-redirectscheme
+      tls: {}
+      service: vault
+
+#endregion
+#region services
+  services:
+    proxmox:
+      loadBalancer:
+        servers:
+          - url: "https://10.0.0.5:8006"
+        passHostHeader: true
+    nas:
+      loadBalancer:
+        servers:
+          - url: "https://10.0.0.3"
+        passHostHeader: true
+    servers:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.7:80"
+        passHostHeader: true
+    gameserver-node-01:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.8:443"
+        passHostHeader: true
+    nextcloud:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:10020"
+        passHostHeader: true
+    photos:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:2342"
+        passHostHeader: true
+    vault:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:10102"
+        passHostHeader: true
+#endregion
+  middlewares:
+    https-redirectscheme:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    default-headers:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    idrac:
+      headers:
+        frameDeny: true
+        browserXssFilter: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsSeconds: 15552000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    default-whitelist:
+      ipWhiteList:
+        sourceRange:
+        - "10.0.0.0/8"
+        - "192.168.0.0/16"
+        - "172.16.0.0/12"
+
+    secured:
+      chain:
+        middlewares:
+        - default-whitelist
+        - default-headers
